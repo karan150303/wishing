@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Mankirat! 🎉</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@300;400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Progress Indicator -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+        <div class="progress-steps">
+            <div class="progress-step active" data-step="1">🎁</div>
+            <div class="progress-step" data-step="2">📅</div>
+            <div class="progress-step" data-step="3">🎂</div>
+            <div class="progress-step" data-step="4">📸</div>
+            <div class="progress-step" data-step="5">👸</div>
+            <div class="progress-step" data-step="6">💌</div>
+            <div class="progress-step" data-step="7">🎁</div>
+            <div class="progress-step" data-step="8">❤️</div>
+        </div>
+    </div>
+
+    <!-- Initial Birthday Popup -->
+    <div id="initial-popup" class="initial-popup active">
+        <div class="popup-content">
+            <div class="popup-sparkles">
+                <span class="popup-sparkle">✨</span>
+                <span class="popup-sparkle">✨</span>
+                <span class="popup-sparkle">✨</span>
+                <span class="popup-sparkle">✨</span>
+            </div>
+            <img src="assets/images/Moana__character_-removebg-preview.png" alt="Happy Birthday" class="popup-image">
+            <h1 class="popup-title">Happy Birthday!</h1>
+            <p class="popup-subtitle">Moana 👑</p>
+            <div class="popup-burst">🎊</div>
+        </div>
+    </div>
+
+    <!-- Floating Balloons -->
+    <div class="balloons-container">
+        <div class="balloon balloon-1">🎈</div>
+        <div class="balloon balloon-2">🎈</div>
+        <div class="balloon balloon-3">🎈</div>
+        <div class="balloon balloon-4">🎈</div>
+        <div class="balloon balloon-5">🎈</div>
+        <div class="balloon balloon-6">🎈</div>
+    </div>
+
+    <!-- Navigation Toast -->
+    <div id="nav-toast" class="nav-toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="section">
+        <div class="gift-container">
+            <div class="gift-box">
+                <div class="gift-lid"></div>
+                <div class="gift-body"></div>
+                <div class="gift-ribbon-v"></div>
+                <div class="gift-ribbon-h"></div>
+                <div class="gift-bow"></div>
+            </div>
+            <h1 class="loading-text">Hey! We have a gift for you...</h1>
+            <button id="open-gift-btn" class="open-btn">Open Gift</button>
+        </div>
+    </div>
+
+    <!-- Date Reveal Screen -->
+    <div id="date-screen" class="section">
+        <div class="date-container">
+            <div class="date-popup">
+                <div class="sparkle sparkle-1">✨</div>
+                <div class="sparkle sparkle-2">✨</div>
+                <div class="sparkle sparkle-3">✨</div>
+                <div class="sparkle sparkle-4">✨</div>
+                <h2 class="date-text">28th January 2026</h2>
+                <p class="special-text">A Very Special Day</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Birthday Screen -->
+    <div id="main-screen" class="section">
+        <div class="main-container">
+            <h1 class="birthday-title">Happy Birthday</h1>
+            <h2 class="name-title">Mankirat</h2>
+            
+            <div class="photo-container">
+                <div class="photo-frame">
+                    <div class="photo-glow"></div>
+                    <img id="birthday-photo" src="assets/images/mankirat.jpg" alt="Mankirat">
+                </div>
+            </div>
+
+            <div class="cake-container">
+                <p class="cake-instruction">✨ Touch candles to blow them out ✨</p>
+                <div class="cake">
+                    <div class="candle-holder">
+                        <div class="candle" data-candle="1">
+                            <div class="flame"></div>
+                            <div class="wick"></div>
+                        </div>
+                        <div class="candle" data-candle="2">
+                            <div class="flame"></div>
+                            <div class="wick"></div>
+                        </div>
+                        <div class="candle" data-candle="3">
+                            <div class="flame"></div>
+                            <div class="wick"></div>
+                        </div>
+                    </div>
+                    <div class="cake-top">
+                        <div class="frosting-drip drip-1"></div>
+                        <div class="frosting-drip drip-2"></div>
+                        <div class="frosting-drip drip-3"></div>
+                    </div>
+                    <div class="cake-middle">
+                        <div class="cake-layer-design"></div>
+                    </div>
+                    <div class="cake-bottom">
+                        <div class="cake-shadow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button id="next-to-gallery" class="next-section-btn" style="display: none;">Continue to Gallery →</button>
+        </div>
+    </div>
+
+    <!-- Gallery Screen with Flip Album -->
+    <div id="gallery-screen" class="section">
+        <div class="gallery-container">
+            <h2 class="gallery-title">Selected Photos</h2>
+            <div class="album-container">
+                <div class="album-book">
+                    <div class="album-page" id="page-1">
+                        <div class="page-content">
+                            <img src="assets/images/mankirat.jpg" alt="Memory 1" class="album-photo">
+                            <p class="photo-caption">.</p>
+                        </div>
+                        <div class="page-number">1</div>
+                    </div>
+                    <div class="album-page" id="page-2">
+                        <div class="page-content">
+                            <img src="assets/images/rr.jpeg" alt="Memory 2" class="album-photo">
+                            <p class="photo-caption">.</p>
+                        </div>
+                        <div class="page-number">2</div>
+                    </div>
+                    <div class="album-page" id="page-3">
+                        <div class="page-content">
+                            <img src="assets/images/sm.png" alt="Memory 3" class="album-photo">
+                            <p class="photo-caption">Sorry no more pics</p>
+                        </div>
+                        <div class="page-number">3</div>
+                    </div>
+                    <div class="album-page" id="page-4">
+                        <div class="page-content">
+                            <img src="assets/images/sm.png" alt="Memory 4" class="album-photo">
+                            <p class="photo-caption">Sorry no more pics</p>
+                        </div>
+                        <div class="page-number">4</div>
+                    </div>
+                </div>
+            </div>
+            <div class="album-controls">
+                <button class="album-nav-btn" id="prev-page">← Previous</button>
+                <span class="page-counter"><span id="current-page">1</span> / 4</span>
+                <button class="album-nav-btn" id="next-page">Next →</button>
+            </div>
+            <button id="next-to-princess" class="next-section-btn">Wanna see a Princess? →</button>
+        </div>
+    </div>
+
+    <!-- Princess Loading Screen -->
+    <div id="princess-loading" class="section">
+        <div class="princess-loading-container">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <h2 class="loading-princess-text">Loading Princess...</h2>
+            <div class="loading-dots">
+                <span>.</span><span>.</span><span>.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Princess Screen (Dark Screen) -->
+    <div id="princess-screen" class="section">
+        <div class="princess-container">
+            <div class="fullscreen-frame">
+                <p class="princess-text">You see? Yeah thats you.</p>
+            </div>
+            <button id="next-from-princess" class="next-section-btn" style="display: none;">Continue →</button>
+        </div>
+    </div>
+
+    <!-- Personal Message Screen -->
+    <div id="message-screen" class="section">
+        <div class="message-container">
+            <h2 class="message-title">Just a Note</h2>
+            <div class="typewriter-container">
+                <p id="typewriter-text" class="typewriter-text"></p>
+                <span class="cursor">|</span>
+            </div>
+            <button id="next-to-gift" class="next-section-btn" style="display: none;">Continue to Gift →</button>
+        </div>
+    </div>
+
+    <!-- Gift/Scratch Card Screen -->
+    <div id="gift-screen" class="section">
+        <div class="gift-section-container">
+            <h2 class="gift-title">A Small Gift</h2>
+            <div class="scratch-card-container">
+                <p class="scratch-instruction">✨ Scratch to reveal your gift ✨</p>
+                <canvas id="scratch-canvas" width="400" height="300"></canvas>
+                <div class="scratch-content">
+                    <div class="gift-reveal">
+                        <h3>🎉 Congratulations! 🎉</h3>
+                        <p class="gift-amount">A small present</p>
+                        <p class="gift-message">Your treat is on me!</p>
+                    </div>
+                </div>
+            </div>
+            <button id="skip-voucher" class="skip-btn" style="display: none;">Skip (It's optional) →</button>
+        </div>
+    </div>
+
+    <!-- Gift Modal -->
+    <div id="gift-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎊 A Small Surprise 🎊</h2>
+            <p class="modal-prize">Your treat is on me!</p>
+            <p class="modal-message">There's a small optional step here.</p>
+            <p class="modal-instruction">Share your details to receive it.</p>
+            
+            <form id="voucher-form">
+                <div class="form-group">
+                    <label for="voucher-type">Choose gift card type:</label>
+                    <select id="voucher-type" required>
+                        <option value="">Select...</option>
+                        <option value="food-swiggy">Food - Swiggy</option>
+                        <option value="food-zomato">Food - Zomato</option>
+                        <option value="fashion-myntra">Fashion - Myntra</option>
+                        <option value="fashion-ajio">Fashion - Flipkart</option>
+                        <option value="fashion-amazon">Fashion - Amazon</option>
+                        <option value="movies-bookmyshow">Movies - BookMyShow</option>
+                        <option value="shopping-flipkart">Shopping - Flipkart</option>
+                        <option value="shopping-amazon">Shopping - Amazon</option>
+                        <option value="cash-paytm">Cash - Paytm</option>
+                        <option value="cash-googlepay">Cash - Google Pay</option>
+                        <option value="beauty-nykaa">Beauty - Nykaa</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contact-method">Choose contact method:</label>
+                    <select id="contact-method" required>
+                        <option value="">Select...</option>
+                        <option value="email">Email</option>
+                        <option value="phone">Phone Number</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="email-group" style="display: none;">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group" id="phone-group" style="display: none;">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" placeholder="+91 XXXXX XXXXX">
+                </div>
+                
+                <button type="submit" class="submit-btn">Claim Gift Card</button>
+            </form>
+
+            <button id="skip-modal" class="skip-modal-btn">Skip, Maybe Later</button>
+        </div>
+    </div>
+
+    <!-- Outro Screen -->
+    <div id="outro-screen" class="section">
+        <div class="outro-container">
+            <h2 class="outro-title">Wishing you the most amazing year ahead!</h2>
+            <p class="outro-message">May all your dreams come true, Mankirat.</p>
+            <p class="outro-signature">With love and best wishes,<br>Karan</p>
+            <div class="floating-hearts">
+                <span class="heart">❤️</span>
+                <span class="heart">💖</span>
+                <span class="heart">💓</span>
+                <span class="heart">💗</span>
+                <span class="heart">💕</span>
+            </div>
+            <div class="action-buttons">
+                <button id="replay-btn" class="replay-btn">↺ Replay Experience</button>
+                <button id="share-btn" class="share-btn">📤 Share</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Confetti Container -->
+    <div id="confetti-container"></div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
