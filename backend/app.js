@@ -17,6 +17,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+
 // 🔥 SERVE FRONTEND STATIC FILES
 const frontendPath = path.join(__dirname, "..", "frontend");
 app.use(express.static(frontendPath));
@@ -24,6 +25,15 @@ app.use(express.static(frontendPath));
 // API routes
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/gift", giftRoutes);
+// 🩺 Health check (for Render / UptimeRobot)
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: Date.now()
+  });
+});
+
 // 🎯 Frontend entry (root)
 app.get("/", (req, res) => {
   res.sendFile(path.join(frontendPath, "index.html"));

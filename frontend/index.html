@@ -2,15 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Happy Birthday Mankirat! 🎉</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Cormorant+Garamond:wght@300;400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- GSAP Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
-    <!-- Progress Indicator -->
+    <!-- Progress Indicator - Sticky on top -->
     <div class="progress-container">
         <div class="progress-bar" id="progress-bar"></div>
         <div class="progress-steps">
@@ -20,8 +23,9 @@
             <div class="progress-step" data-step="4">📸</div>
             <div class="progress-step" data-step="5">👸</div>
             <div class="progress-step" data-step="6">💌</div>
-            <div class="progress-step" data-step="7">🎁</div>
-            <div class="progress-step" data-step="8">❤️</div>
+            <div class="progress-step" data-step="7">🎮</div>
+            <div class="progress-step" data-step="8">🎁</div>
+            <div class="progress-step" data-step="9">❤️</div>
         </div>
     </div>
 
@@ -88,7 +92,7 @@
     <!-- Main Birthday Screen -->
     <div id="main-screen" class="section">
         <div class="main-container">
-            <h1 class="birthday-title">Happy Birthday</h1>
+            <h1 class="birthday-title">You’ve lived a lot of days. This one matters.</h1>
             <h2 class="name-title">Mankirat</h2>
             
             <div class="photo-container">
@@ -119,6 +123,7 @@
                         <div class="frosting-drip drip-1"></div>
                         <div class="frosting-drip drip-2"></div>
                         <div class="frosting-drip drip-3"></div>
+                        <div class="cake-decoration">🌟</div>
                     </div>
                     <div class="cake-middle">
                         <div class="cake-layer-design"></div>
@@ -133,46 +138,27 @@
         </div>
     </div>
 
-    <!-- Gallery Screen with Flip Album -->
+    <!-- Gallery Screen with Collage Animation -->
     <div id="gallery-screen" class="section">
         <div class="gallery-container">
             <h2 class="gallery-title">Selected Photos</h2>
-            <div class="album-container">
-                <div class="album-book">
-                    <div class="album-page" id="page-1">
-                        <div class="page-content">
-                            <img src="assets/images/mankirat.jpg" alt="Memory 1" class="album-photo">
-                            <p class="photo-caption">.</p>
-                        </div>
-                        <div class="page-number">1</div>
-                    </div>
-                    <div class="album-page" id="page-2">
-                        <div class="page-content">
-                            <img src="assets/images/rr.jpeg" alt="Memory 2" class="album-photo">
-                            <p class="photo-caption">.</p>
-                        </div>
-                        <div class="page-number">2</div>
-                    </div>
-                    <div class="album-page" id="page-3">
-                        <div class="page-content">
-                            <img src="assets/images/sm.png" alt="Memory 3" class="album-photo">
-                            <p class="photo-caption">Sorry no more pics</p>
-                        </div>
-                        <div class="page-number">3</div>
-                    </div>
-                    <div class="album-page" id="page-4">
-                        <div class="page-content">
-                            <img src="assets/images/sm.png" alt="Memory 4" class="album-photo">
-                            <p class="photo-caption">Sorry no more pics</p>
-                        </div>
-                        <div class="page-number">4</div>
-                    </div>
+            <div class="collage-container">
+                <div class="collage-photo" data-index="0">
+                    <img src="assets/images/mankirat.jpg" alt="Memory 1">
+                    <div class="photo-overlay"></div>
                 </div>
-            </div>
-            <div class="album-controls">
-                <button class="album-nav-btn" id="prev-page">← Previous</button>
-                <span class="page-counter"><span id="current-page">1</span> / 4</span>
-                <button class="album-nav-btn" id="next-page">Next →</button>
+                <div class="collage-photo" data-index="1">
+                    <img src="assets/images/rr.jpg" alt="Memory 2">
+                    <div class="photo-overlay"></div>
+                </div>
+                <div class="collage-photo" data-index="2">
+                    <img src="assets/images/nn.jpg" alt="Memory 3">
+                    <div class="photo-overlay"></div>
+                </div>
+                <div class="collage-photo" data-index="3">
+                    <img src="assets/images/sm.png" alt="Memory 4">
+                    <div class="photo-overlay"></div>
+                </div>
             </div>
             <button id="next-to-princess" class="next-section-btn">Wanna see a Princess? →</button>
         </div>
@@ -193,12 +179,16 @@
         </div>
     </div>
 
-    <!-- Princess Screen (Dark Screen) -->
+    <!-- Princess Screen (Mirror/Reflection) -->
     <div id="princess-screen" class="section">
         <div class="princess-container">
-            <div class="fullscreen-frame">
-                <p class="princess-text">You see? Yeah thats you.</p>
+            <div class="mirror-frame">
+                <div class="mirror-border"></div>
+                <div class="mirror-content">
+                    <div class="mirror-overlay">👑</div>
+                </div>
             </div>
+            <p class="princess-caption">You see? Yeah that's you.</p>
             <button id="next-from-princess" class="next-section-btn" style="display: none;">Continue →</button>
         </div>
     </div>
@@ -211,7 +201,27 @@
                 <p id="typewriter-text" class="typewriter-text"></p>
                 <span class="cursor">|</span>
             </div>
-            <button id="next-to-gift" class="next-section-btn" style="display: none;">Continue to Gift →</button>
+            <button id="next-to-minigame" class="next-section-btn" style="display: none;">Continue to Game →</button>
+        </div>
+    </div>
+
+    <!-- Mini Game Screen -->
+    <div id="minigame-screen" class="section">
+        <div class="minigame-container">
+            <h2 class="minigame-title">Catch Your Gift!</h2>
+            <div class="game-info">
+                <div class="score-display">Score: <span id="game-score">0</span></div>
+                <div class="timer-display">Time: <span id="game-timer">30</span>s</div>
+            </div>
+            <div class="game-canvas-wrapper">
+                <canvas id="game-canvas"></canvas>
+                <div id="game-over" class="game-over-screen" style="display: none;">
+                    <h3>🎉 Great Job! 🎉</h3>
+                    <p class="final-score">Score: <span id="final-score">0</span></p>
+                    <button id="continue-after-game" class="game-continue-btn">Continue →</button>
+                </div>
+            </div>
+            <button id="skip-game" class="skip-game-btn">Skip Game →</button>
         </div>
     </div>
 
@@ -290,7 +300,29 @@
     <!-- Outro Screen -->
     <div id="outro-screen" class="section">
         <div class="outro-container">
-            <h2 class="outro-title">Wishing you the most amazing year ahead!</h2>
+            <!-- ===== OUTRO STATS ===== -->
+            <div class="outro-stats">
+                <div class="outro-item">
+                    <span class="outro-emoji">🌍</span>
+                    <p class="outro-main">You’ve lived</p>
+                    <p class="outro-number">7,670 days</p>
+                    <p class="outro-sub">on this planet</p>
+                </div>
+
+                <div class="outro-item">
+                    <span class="outro-emoji">🎂</span>
+                    <p class="outro-main">Next birthday in</p>
+                    <p class="outro-number">365 days</p>
+                    <p class="outro-sub">another chapter loading</p>
+                </div>
+            </div>
+
+            <!-- ===== FINAL LINE ===== -->
+            <p class="outro-final-line">
+                Some people are rare.<br>
+                <span>You’re one of them.</span>
+            </p>
+            <h2 class="outro-title">This is where I stop. The rest is yours.</h2>
             <p class="outro-message">May all your dreams come true, Mankirat.</p>
             <p class="outro-signature">With love and best wishes,<br>Karan</p>
             <div class="floating-hearts">
@@ -306,7 +338,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Confetti Container -->
     <div id="confetti-container"></div>

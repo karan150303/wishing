@@ -1,4 +1,6 @@
 /* ================= ANALYTICS ENGINE ================= */
+let controlsBound = false;
+
 // Persistent per device
 let visitorId = localStorage.getItem("visitorId");
 if (!visitorId) {
@@ -22,9 +24,6 @@ const screenInfo = {
 const pageUrl = window.location.href;
 const navEntry = performance.getEntriesByType("navigation")[0];
 const entryType = navEntry?.type || "unknown";
-
-
-
 
 function track(event, meta = {}) {
   const payload = {
@@ -61,11 +60,13 @@ window.addEventListener("beforeunload", () => {
     totalTime: Date.now() - pageLoadTime
   });
 });
+
 const hasVisitedBefore = localStorage.getItem("hasVisited");
 if (hasVisitedBefore) {
   track("revisit");
 }
 localStorage.setItem("hasVisited", "true");
+
 function sendGiftResponse(payload) {
   fetch("/api/gift/respond", {
     method: "POST",
@@ -87,7 +88,7 @@ let currentPage = 1;
 let isScratching = false;
 let scratchPercentage = 0;
 
-// Section mapping for progress indicator
+// Section mapping for progress indicator (updated with minigame)
 const sections = [
     'loading-screen',      // 1
     'date-screen',         // 2
@@ -95,22 +96,23 @@ const sections = [
     'gallery-screen',      // 4
     'princess-loading',    // 5
     'message-screen',      // 6
-    'gift-screen',         // 7
-    'outro-screen'         // 8
+    'minigame-screen',     // 7
+    'gift-screen',         // 8
+    'outro-screen'         // 9
 ];
 
-// Gallery images (4 photos for album)
+// Gallery images (4 photos for collage)
 const galleryImages = [
     {
         url: 'assets/images/mankirat.jpg',
         caption: '.'
     },
     {
-        url: 'assets/images/rr.jpeg',
+        url: 'assets/images/rr.jpg',
         caption: '.'
     },
     {
-        url: 'assets/images/sm.png',
+        url: 'assets/images/nn.jpg',
         caption: 'Sorry no more pics'
     },
     {
@@ -123,9 +125,9 @@ const personalMessage = `Hey Mankirat,
 
 Just wanted to wish you a very happy birthday.
 
-I've thought about the past, and I realise I didn't handle things maturely back then. I'm sorry for that. I never meant to make things uncomfortable for you.
+I’ve thought about the past, and I know I wasn’t always my best self back then. I’m sorry for that. It was never my intention to make things awkward or uncomfortable.
 
-No expectations at all — just wishing you well and hoping this year brings you peace, happiness, and good things ahead.
+This isn’t about expectations or revisiting anything just a simple wish for you. I hope this year brings you peace, good health, and moments that genuinely make you happy.
 
 Take care.`;
 
@@ -165,42 +167,238 @@ function showToast(message) {
 }
 
 function showSection(sectionId) {
-
-
-  const currentActive = document.querySelector('.section.active');
-
+    const currentActive = document.querySelector('.section.active');
     
     if (currentActive) {
-        currentActive.style.opacity = '0';
-        setTimeout(() => {
-            currentActive.classList.remove('active');
-            
-            const newSection = document.getElementById(sectionId);
-            newSection.classList.add('active');
-            setTimeout(() => {
-                newSection.style.opacity = '1';
-            }, 50);
-            
-            // Update progress
-            const sectionIndex = sections.indexOf(sectionId);
-            if (sectionIndex !== -1) {
-                updateProgress(sectionIndex);
+        // GSAP fade out current section
+        gsap.to(currentActive, {
+            opacity: 0,
+            duration: 0.3,
+            onComplete: () => {
+                currentActive.classList.remove('active');
+                
+                const newSection = document.getElementById(sectionId);
+                newSection.classList.add('active');
+                
+                // GSAP fade in new section
+                gsap.fromTo(newSection, 
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+                );
+                
+                // Trigger section-specific animations
+                triggerSectionAnimations(sectionId);
+                
+                // Update progress
+                const sectionIndex = sections.indexOf(sectionId);
+                if (sectionIndex !== -1) {
+                    updateProgress(sectionIndex);
+                }
             }
-        }, 300);
+        });
     } else {
         const newSection = document.getElementById(sectionId);
         newSection.classList.add('active');
-        setTimeout(() => {
-            newSection.style.opacity = '1';
-        }, 50);
         
-        // Update progress
+        gsap.fromTo(newSection, 
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+        );
+        
+        triggerSectionAnimations(sectionId);
+        
         const sectionIndex = sections.indexOf(sectionId);
         if (sectionIndex !== -1) {
             updateProgress(sectionIndex);
         }
     }
 }
+
+// Trigger section-specific GSAP animations
+function triggerSectionAnimations(sectionId) {
+    switch(sectionId) {
+        case 'loading-screen':
+            animateGiftBox();
+            break;
+        case 'date-screen':
+            animateDateReveal();
+            break;
+        case 'main-screen':
+            animateBirthdayTitle();
+            break;
+        case 'gallery-screen':
+            animateCollage();
+            break;
+        case 'princess-screen':
+            animatePrincessMirror();
+            break;
+        case 'message-screen':
+            // Typewriter handles its own animation
+            break;
+        case 'minigame-screen':
+            initMiniGame();
+            break;
+    }
+}
+
+// GSAP Animations for different sections
+function animateGiftBox() {
+    const giftBox = document.querySelector('.gift-box');
+    const loadingText = document.querySelector('.loading-text');
+    const openBtn = document.querySelector('.open-btn');
+    
+    gsap.fromTo(giftBox,
+        { scale: 0, rotation: -180 },
+        { scale: 1, rotation: 0, duration: 1, ease: "elastic.out(1, 0.5)" }
+    );
+    
+    gsap.fromTo(loadingText,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, delay: 0.5 }
+    );
+    
+    gsap.fromTo(openBtn,
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1, duration: 0.6, delay: 1, ease: "back.out(1.7)" }
+    );
+}
+
+function animateDateReveal() {
+    const dateText = document.querySelector('.date-text');
+    const specialText = document.querySelector('.special-text');
+    const sparkles = document.querySelectorAll('.sparkle');
+    
+    gsap.fromTo(dateText,
+        { scale: 0, rotation: 360 },
+        { scale: 1, rotation: 0, duration: 1.2, ease: "back.out(1.7)" }
+    );
+    
+    gsap.fromTo(specialText,
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, delay: 0.6 }
+    );
+    
+    sparkles.forEach((sparkle, index) => {
+        gsap.fromTo(sparkle,
+            { scale: 0, rotation: 0 },
+            { 
+                scale: 1, 
+                rotation: 360, 
+                duration: 0.8, 
+                delay: 0.3 + index * 0.1,
+                ease: "back.out(1.7)"
+            }
+        );
+    });
+}
+
+function animateBirthdayTitle() {
+    const birthdayTitle = document.querySelector('.birthday-title');
+    const nameTitle = document.querySelector('.name-title');
+    const photoFrame = document.querySelector('.photo-frame');
+    const cake = document.querySelector('.cake');
+    
+    gsap.fromTo(birthdayTitle,
+        { opacity: 0, y: -50 },
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out" }
+    );
+    
+    gsap.fromTo(nameTitle,
+        { opacity: 0, scale: 0.5 },
+        { opacity: 1, scale: 1, duration: 1, delay: 0.3, ease: "elastic.out(1, 0.5)" }
+    );
+    
+    gsap.fromTo(photoFrame,
+        { opacity: 0, scale: 0, rotation: -180 },
+        { opacity: 1, scale: 1, rotation: 0, duration: 1.2, delay: 0.6, ease: "back.out(1.7)" }
+    );
+    
+    gsap.fromTo(cake,
+        { opacity: 0, y: 100 },
+        { opacity: 1, y: 0, duration: 1, delay: 1, ease: "bounce.out" }
+    );
+}
+
+function animateCollage() {
+    const photos = document.querySelectorAll('.collage-photo');
+    
+    // Animate photos gathering from edges to center
+    photos.forEach((photo, index) => {
+        const angle = (index / photos.length) * Math.PI * 2;
+        const distance = 800;
+        const startX = Math.cos(angle) * distance;
+        const startY = Math.sin(angle) * distance;
+        const startRotation = Math.random() * 720 - 360;
+        
+        gsap.fromTo(photo,
+            {
+                x: startX,
+                y: startY,
+                scale: 0,
+                rotation: startRotation,
+                opacity: 0
+            },
+            {
+                x: 0,
+                y: 0,
+                scale: 1,
+                rotation: 0,
+                opacity: 1,
+                duration: 1.5,
+                delay: index * 0.2,
+                ease: "power3.out"
+            }
+        );
+    });
+}
+
+function animatePrincessMirror() {
+    const mirrorBorder = document.querySelector('.mirror-border');
+    const mirrorOverlay = document.querySelector('.mirror-overlay');
+    const caption = document.querySelector('.princess-caption');
+    
+    gsap.fromTo(mirrorBorder,
+        { scale: 0, rotation: 180 },
+        { scale: 1, rotation: 0, duration: 1.5, ease: "elastic.out(1, 0.5)" }
+    );
+    
+    // Crown appears after border
+    gsap.fromTo(mirrorOverlay,
+        { opacity: 0, scale: 0, rotation: -360 },
+        { 
+            opacity: 0.9, 
+            scale: 1, 
+            rotation: 0, 
+            duration: 1.5, 
+            delay: 2,
+            ease: "back.out(1.7)"
+        }
+    );
+    
+    // Caption appears last
+    gsap.fromTo(caption,
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, delay: 4 }
+    );
+    
+    // Show continue button
+    setTimeout(() => {
+        const continueBtn = document.getElementById('next-from-princess');
+        gsap.fromTo(continueBtn,
+            { opacity: 0, scale: 0.5 },
+            { 
+                opacity: 1, 
+                scale: 1, 
+                duration: 0.6, 
+                ease: "back.out(1.7)",
+                onStart: () => {
+                    continueBtn.style.display = 'inline-block';
+                }
+            }
+        );
+    }, 6000);
+}
+
 
 // Initial popup auto-dismiss
 window.addEventListener('load', () => {
@@ -209,6 +407,7 @@ window.addEventListener('load', () => {
         document.getElementById('loading-screen').classList.add('active');
         updateProgress(0);
         startBalloons();
+        animateGiftBox();
     }, 3000);
     
     // Preload gallery images
@@ -233,6 +432,20 @@ function startBalloons() {
     });
 }
 
+function stopBalloons() {
+    document.querySelectorAll('.balloon').forEach(balloon => {
+        balloon.style.animationPlayState = 'paused';
+        balloon.style.opacity = '0';
+    });
+}
+
+function resumeBalloons() {
+    document.querySelectorAll('.balloon').forEach(balloon => {
+        balloon.style.animationPlayState = 'running';
+        balloon.style.opacity = '1';
+    });
+}
+
 // Loading Screen
 document.getElementById('open-gift-btn').addEventListener('click', () => {
     showSection('date-screen');
@@ -252,8 +465,15 @@ candles.forEach(candle => {
             this.classList.add('blown');
             candlesBlown++;
             
+            // GSAP animation for blown candle
+            gsap.to(this, {
+                scale: 0.92,
+                filter: 'grayscale(0.9) brightness(0.6)',
+                duration: 0.4
+            });
+            
             // Play blow sound effect
-            playBlowSound();
+            // playBlowSound();
             
             // Add smoke effect
             createSmoke(this);
@@ -261,7 +481,12 @@ candles.forEach(candle => {
             if (candlesBlown === candles.length) {
                 setTimeout(() => {
                     createConfetti();
-                    document.getElementById('next-to-gallery').style.display = 'inline-block';
+                    const nextBtn = document.getElementById('next-to-gallery');
+                    nextBtn.style.display = 'inline-block';
+                    gsap.fromTo(nextBtn,
+                        { opacity: 0, scale: 0.5, y: 20 },
+                        { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }
+                    );
                     showToast('🎉 All candles blown! You can continue when ready 🎉');
                 }, 500);
             }
@@ -278,28 +503,20 @@ function createSmoke(candle) {
     smoke.style.transform = 'translateX(-50%)';
     smoke.style.fontSize = '20px';
     smoke.textContent = '💨';
-    smoke.style.animation = 'smokeRise 1s ease-out forwards';
     candle.appendChild(smoke);
     
-    setTimeout(() => smoke.remove(), 1000);
+    gsap.to(smoke, {
+        y: -30,
+        opacity: 0,
+        duration: 1,
+        onComplete: () => smoke.remove()
+    });
 }
-
-// Add smoke animation to CSS dynamically
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes smokeRise {
-        to {
-            transform: translateX(-50%) translateY(-30px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 // Confetti effect
 function createConfetti() {
     const container = document.getElementById('confetti-container');
-    const colors = ['#FF69B4', '#FFD700', '#FFED4E', '#FF1493', '#FF8FAB'];
+    const colors = ['#FF69B4', '#FFD700', '#FFED4E', '#FF1493', '#FF8FAB', '#4A90E2'];
     
     for (let i = 0; i < 150; i++) {
         setTimeout(() => {
@@ -344,116 +561,32 @@ function playBlowSound() {
 // Gallery navigation
 document.getElementById('next-to-gallery').addEventListener('click', () => {
     showSection('gallery-screen');
-    showToast('📸 A few moments from the past 📸');
-
-    currentPage = 1;
-
-    document.querySelectorAll('.album-page').forEach(page => {
-        page.classList.remove('flipped');
-    });
-
-    updateAlbumPages();
+    showToast('📸 Beautiful moments captured 📸');
 });
-
-// Album page navigation
-const totalPages = 4;
-
-function updateAlbumPages() {
-    document.getElementById('current-page').textContent = currentPage;
-    document.getElementById('prev-page').disabled = currentPage === 1;
-    document.getElementById('next-page').disabled = currentPage === totalPages;
-    
-    // Update page visibility based on current page
-    const page1 = document.getElementById('page-1');
-    const page3 = document.getElementById('page-3');
-    
-    // Remove all flipped states first
-    page1.classList.remove('flipped');
-    page3.classList.remove('flipped');
-    
-    // Apply correct state based on current page
-    if (currentPage === 2) {
-        page1.classList.add('flipped');
-    } else if (currentPage === 3) {
-        page1.classList.add('flipped');
-    } else if (currentPage === 4) {
-        page1.classList.add('flipped');
-        page3.classList.add('flipped');
-    }
-}
-
-document.getElementById('next-page').addEventListener('click', () => {
-    if (currentPage < totalPages) {
-        currentPage++;
-        updateAlbumPages();
-        playPageFlipSound();
-    }
-});
-
-document.getElementById('prev-page').addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        updateAlbumPages();
-        playPageFlipSound();
-    }
-});
-
-function playPageFlipSound() {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 200;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.15);
-    } catch (e) {
-        console.log('Audio not supported');
-    }
-}
 
 // Princess screen navigation with loading
 document.getElementById('next-to-princess').addEventListener('click', () => {
-    // Stop balloons before princess screen
     stopBalloons();
     
     showSection('princess-loading');
     showToast('👑 Loading something special... 👑');
     
-    // Show loading screen for 3 seconds
     setTimeout(() => {
         showSection('princess-screen');
-        // No toast, just silence for the mirror effect
-        
-        // Show continue button after 10 seconds (5s delay for text + 5s more)
-        setTimeout(() => {
-            document.getElementById('next-from-princess').style.display = 'inline-block';
-        }, 10000);
     }, 3000);
 });
 
 // Continue from princess screen
 document.getElementById('next-from-princess').addEventListener('click', () => {
     resumeBalloons();
-
     showSection('message-screen');
     showToast('💌 A note for you 💌');
-
-    // 🔥 RESET TEXT BEFORE TYPING
+    
     const el = document.getElementById('typewriter-text');
     el.textContent = '';
-
+    
     typeWriter(personalMessage, 0);
 });
-
 
 // Typewriter effect
 function typeWriter(text, index) {
@@ -466,17 +599,250 @@ function typeWriter(text, index) {
         }, 50);
     } else {
         setTimeout(() => {
-            document.getElementById('next-to-gift').style.display = 'inline-block';
-            showToast('🎁 A small gift is waiting 🎁');
+            const nextBtn = document.getElementById('next-to-minigame');
+            nextBtn.style.display = 'inline-block';
+            gsap.fromTo(nextBtn,
+                { opacity: 0, y: 20 },
+                { opacity: 1, y: 0, duration: 0.6 }
+            );
+            showToast('🎮 Ready for a fun game? 🎮');
         }, 500);
     }
 }
 
-document.getElementById('next-to-gift').addEventListener('click', () => {
+// Navigate to minigame
+document.getElementById('next-to-minigame').addEventListener('click', () => {
+    showSection('minigame-screen');
+    showToast('🎁 Catch the gifts before time runs out! 🎁');
+});
+
+// ============ MINI GAME: CATCH THE GIFT ============
+let gameScore = 0;
+let gameTime = 30;
+let gameRunning = false;
+let gameInterval;
+let spawnInterval;
+let fallingItems = [];
+
+function initMiniGame() {
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    const containerWidth = Math.min(600, window.innerWidth * 0.95);
+    canvas.width = containerWidth;
+    canvas.height = 400;
+    
+    // Game objects
+    const bucket = {
+        x: canvas.width / 2 - 40,
+        y: canvas.height - 60,
+        width: 80,
+        height: 50,
+        speed: 8
+    };
+    
+    const keys = {};
+    
+    // Reset game state
+    gameScore = 0;
+    gameTime = 30;
+    gameRunning = true;
+    fallingItems = [];
+    
+    document.getElementById('game-score').textContent = gameScore;
+    document.getElementById('game-timer').textContent = gameTime;
+    document.getElementById('game-over').style.display = 'none';
+    
+    // Spawn falling items
+    spawnInterval = setInterval(() => {
+        if (!gameRunning) return;
+        
+        const rand = Math.random();
+
+        let itemType = "gift";
+        let emoji = "🎁";
+
+        if (rand < 0.2) {
+            itemType = "bomb";
+            emoji = "💣";
+        } else if (rand < 0.45) {
+            itemType = "balloon";
+            emoji = "🎈";
+        }
+
+        const item = {
+            x: Math.random() * (canvas.width - 30),
+            y: -30,
+            width: 30,
+            height: 30,
+            speed: itemType === "bomb" ? 4 : 2 + Math.random() * 2,
+            emoji,
+            type: itemType
+        };
+
+        fallingItems.push(item);
+    }, 800);
+    
+    // Game timer
+    gameInterval = setInterval(() => {
+        if (!gameRunning) return;
+        
+        gameTime--;
+        document.getElementById('game-timer').textContent = gameTime;
+        
+        if (gameTime <= 0) {
+            gameOver();
+        }
+    }, 1000);
+    
+    // Input handling
+    if (!controlsBound) {
+        window.addEventListener('keydown', e => keys[e.key] = true);
+        window.addEventListener('keyup', e => keys[e.key] = false);
+        controlsBound = true;
+    }
+
+    
+    // Touch controls for mobile
+    let touchStartX = 0;
+    canvas.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touchX = e.touches[0].clientX;
+        const diff = touchX - touchStartX;
+        bucket.x += diff * 0.5;
+        touchStartX = touchX;
+        
+        // Keep bucket in bounds
+        bucket.x = Math.max(0, Math.min(canvas.width - bucket.width, bucket.x));
+    });
+    
+    // Game loop
+    function gameLoop() {
+        if (!gameRunning) return;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Update bucket position
+        if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+            bucket.x -= bucket.speed;
+        }
+        if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+            bucket.x += bucket.speed;
+        }
+        
+        // Keep bucket in bounds
+        bucket.x = Math.max(0, Math.min(canvas.width - bucket.width, bucket.x));
+        
+        // Draw bucket
+        ctx.font = '50px Arial';
+        ctx.fillText('🧺', bucket.x, bucket.y + bucket.height);
+        
+        // Update and draw falling items
+        for (let i = fallingItems.length - 1; i >= 0; i--) {
+            const item = fallingItems[i];
+            item.y += item.speed;
+            
+            // Draw item
+            ctx.font = '30px Arial';
+            ctx.fillText(item.emoji, item.x, item.y + item.height);
+            
+            // Check collision with bucket
+            if (item.y + item.height > bucket.y &&
+                item.y < bucket.y + bucket.height &&
+                item.x + item.width > bucket.x &&
+                item.x < bucket.x + bucket.width) {
+                
+                if (item.type === "bomb") {
+                    gameOver("💥 Boom! You caught a bomb");
+                    return;
+                }
+
+                if (item.type === "gift") {
+                    gameScore += 10;
+                    document.getElementById('game-score').textContent = gameScore;
+                    playCollectSound();
+                }
+                
+                fallingItems.splice(i, 1);
+                continue;
+            }
+            
+            // Remove if out of bounds
+            if (item.y > canvas.height) {
+                fallingItems.splice(i, 1);
+            }
+        }
+        
+        requestAnimationFrame(gameLoop);
+    }
+    
+    gameLoop();
+}
+
+function gameOver(reason = "⏱ Time’s up!") {
+    gameRunning = false;
+    clearInterval(gameInterval);
+    clearInterval(spawnInterval);
+
+    document.getElementById('final-score').textContent = gameScore;
+
+    const gameOverScreen = document.getElementById('game-over');
+    gameOverScreen.querySelector("h3").textContent = reason;
+    gameOverScreen.style.display = "flex";
+
+    gsap.fromTo(gameOverScreen,
+        { scale: 0, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
+    );
+
+    createConfetti();
+}
+
+function playCollectSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
+
+// Continue after game
+document.getElementById('continue-after-game').addEventListener('click', () => {
     showSection('gift-screen');
     showToast('✨ Scratch to reveal your surprise! ✨');
     initScratchCard();
 });
+
+// Skip game button
+document.getElementById('skip-game').addEventListener('click', () => {
+    if (gameRunning) {
+        gameOver("⏭ Skipped the game");
+    }
+    showSection('gift-screen');
+    showToast('✨ Scratch to reveal your surprise! ✨');
+    initScratchCard();
+});
+
 
 // Scratch card
 function initScratchCard() {
@@ -492,14 +858,14 @@ function initScratchCard() {
     
     // Draw scratch surface with gradient
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, '#C0C0C0');
-    gradient.addColorStop(0.5, '#E8E8E8');
-    gradient.addColorStop(1, '#C0C0C0');
+    gradient.addColorStop(0, '#9370DB');
+    gradient.addColorStop(0.5, '#C0C0C0');
+    gradient.addColorStop(1, '#9370DB');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Add text
-    ctx.fillStyle = '#666';
+    ctx.fillStyle = '#333';
     ctx.font = 'bold 30px Playfair Display';
     ctx.textAlign = 'center';
     ctx.fillText('Scratch Here', canvas.width / 2, canvas.height / 2 - 20);
@@ -586,10 +952,16 @@ function checkScratchPercentage(ctx, canvas) {
     const percentage = (transparent / (pixels.length / 4)) * 100;
 
     if (percentage > 60 && !document.getElementById('gift-modal').classList.contains('active')) {
-    document.getElementById('skip-voucher').style.display = 'inline-block';
-    document.getElementById('gift-modal').classList.add('active');
-    createConfetti();
-    showToast('🎊 Congratulations! You won! 🎊');
+        const skipBtn = document.getElementById('skip-voucher');
+        skipBtn.style.display = 'inline-block';
+        gsap.fromTo(skipBtn,
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6 }
+        );
+        
+        document.getElementById('gift-modal').classList.add('active');
+        createConfetti();
+        showToast('🎊 Congratulations! You won! 🎊');
     }
 }
 
@@ -598,11 +970,6 @@ document.getElementById('skip-voucher').addEventListener('click', () => {
     showSection('outro-screen');
     showToast('✨ Thank you for being here ✨');
     createConfetti();
-    
-    // Show final popup after 3 seconds
-    setTimeout(() => {
-
-    }, 3000);
 });
 
 // Skip modal button
@@ -612,11 +979,6 @@ document.getElementById('skip-modal').addEventListener('click', () => {
         showSection('outro-screen');
         createConfetti();
         showToast('✨ Thank you for being here ✨');
-        
-        // Show final popup after 3 seconds
-        setTimeout(() => {
-
-        }, 3000);
     }, 500);
 });
 
@@ -648,29 +1010,23 @@ document.getElementById('voucher-form').addEventListener('submit', (e) => {
     
     const contact = contactMethod === 'email' ? email : phone;
     sendGiftResponse({
-    coffeeResponse: "yes",
-    coupon: {
-        code: voucherType,                // ✅ REQUIRED
-        description: `Contact via ${contactMethod}`,
-        value: 0,                         // or amount if you want
-        contactMethod,
-        contact
-    }
+        coffeeResponse: "yes",
+        coupon: {
+            code: voucherType,
+            description: `Contact via ${contactMethod}`,
+            value: 0,
+            contactMethod,
+            contact
+        }
     });
 
-    // Show success message
     alert(`Thanks! If you chose to receive it, the food coupon will be shared with you soon. Take care 🙂`);
     
-    // Close modal and show outro
     document.getElementById('gift-modal').classList.remove('active');
     setTimeout(() => {
         showSection('outro-screen');
         createConfetti();
         showToast('✨ Thank you for being here ✨');
-        
-        // Show final popup after 3 seconds
-        setTimeout(() => {
-        }, 3000);
     }, 500);
 });
 
@@ -680,15 +1036,14 @@ document.getElementById('replay-btn').addEventListener('click', () => {
     candlesBlown = 0;
     currentPage = 1;
     scratchPercentage = 0;
+    gameScore = 0;
+    gameTime = 30;
+    gameRunning = false;
     
     // Reset candles
     document.querySelectorAll('.candle').forEach(candle => {
         candle.classList.remove('blown');
-    });
-    
-    // Reset album pages
-    document.querySelectorAll('.album-page').forEach(page => {
-        page.classList.remove('flipped');
+        gsap.set(candle, { scale: 1, filter: 'none' });
     });
     
     // Reset typewriter
@@ -697,10 +1052,8 @@ document.getElementById('replay-btn').addEventListener('click', () => {
     // Hide buttons
     document.getElementById('next-to-gallery').style.display = 'none';
     document.getElementById('next-from-princess').style.display = 'none';
-    document.getElementById('next-to-gift').style.display = 'none';
+    document.getElementById('next-to-minigame').style.display = 'none';
     document.getElementById('skip-voucher').style.display = 'none';
-    
-
     
     // Reset progress
     updateProgress(0);
@@ -719,34 +1072,18 @@ document.getElementById('share-btn').addEventListener('click', async () => {
     };
     track("shared", {
         method: navigator.share ? "native" : "copy"
-        });
+    });
 
     try {
         if (navigator.share) {
-            // Use native share API for mobile
             await navigator.share(shareData);
             showToast('📤 Thanks for sharing! 📤');
         } else {
-            // Fallback: Copy link to clipboard
             await navigator.clipboard.writeText(window.location.href);
             showToast('🔗 Link copied to clipboard! 🔗');
         }
     } catch (err) {
-        // If both fail, show the URL in an alert
         alert('Share this link:\n' + window.location.href);
-    }
-});
-
-
-
-// Keyboard navigation for album
-document.addEventListener('keydown', (e) => {
-    if (document.getElementById('gallery-screen').classList.contains('active')) {
-        if (e.key === 'ArrowLeft') {
-            document.getElementById('prev-page')?.click();
-        } else if (e.key === 'ArrowRight') {
-            document.getElementById('next-page')?.click();
-        }
     }
 });
 
@@ -761,7 +1098,6 @@ document.addEventListener('contextmenu', (e) => {
 window.addEventListener('resize', () => {
     const canvas = document.getElementById('scratch-canvas');
     if (canvas && window.innerWidth <= 768) {
-        // Reinitialize scratch card on resize for mobile
         const wasActive = document.getElementById('gift-screen').classList.contains('active');
         if (wasActive && !document.getElementById('gift-modal').classList.contains('active')) {
             initScratchCard();
@@ -791,17 +1127,25 @@ document.querySelector('.name-title')?.addEventListener('click', function() {
     }
 });
 
+// Disable pinch-to-zoom on mobile for better game experience
+document.addEventListener('touchmove', function(event) {
+    if (event.scale !== 1) {
+        event.preventDefault();
+    }
+}, { passive: false });
 
-function stopBalloons() {
-    document.querySelectorAll('.balloon').forEach(balloon => {
-        balloon.style.animationPlayState = 'paused';
-        balloon.style.opacity = '0';
-    });
-}
+// Performance optimization: Pause animations when tab is not visible
+document.addEventListener('visibilitychange', () => {
+    const balloons = document.querySelectorAll('.balloon');
+    if (document.hidden) {
+        balloons.forEach(balloon => {
+            balloon.style.animationPlayState = 'paused';
+        });
+    } else {
+        balloons.forEach(balloon => {
+            balloon.style.animationPlayState = 'running';
+        });
+    }
+});
 
-function resumeBalloons() {
-    document.querySelectorAll('.balloon').forEach(balloon => {
-        balloon.style.animationPlayState = 'running';
-        balloon.style.opacity = '1';
-    });
-}
+console.log('✨ Birthday card loaded successfully! ✨');
