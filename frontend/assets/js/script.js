@@ -116,7 +116,7 @@ const galleryImages = [
         caption: 'Sorry no more pics'
     },
     {
-        url: 'assets/images/sm.png',
+        url: 'assets/images/mankirat.jpg',
         caption: 'Sorry no more pics'
     }
 ];
@@ -125,9 +125,9 @@ const personalMessage = `Hey Mankirat,
 
 Just wanted to wish you a very happy birthday.
 
-I’ve thought about the past, and I know I wasn’t always my best self back then. I’m sorry for that. It was never my intention to make things awkward or uncomfortable.
+I've thought about the past, and I realise I didn't handle things maturely back then. I'm sorry for that. I never meant to make things uncomfortable for you.
 
-This isn’t about expectations or revisiting anything just a simple wish for you. I hope this year brings you peace, good health, and moments that genuinely make you happy.
+No expectations at all just wishing you well and hoping this year brings you peace, happiness, and good things ahead.
 
 Take care.`;
 
@@ -155,15 +155,26 @@ function updateProgress(sectionIndex) {
 }
 
 // Show navigation toast
+let toastTimeout;
+
 function showToast(message) {
     const toast = document.getElementById('nav-toast');
     const toastMessage = document.getElementById('toast-message');
+
     toastMessage.textContent = message;
+
+    // Reset state
+    toast.classList.remove('show');
+    clearTimeout(toastTimeout);
+
+    // Force reflow so animation always restarts
+    void toast.offsetHeight;
+
     toast.classList.add('show');
-    
-    setTimeout(() => {
+
+    toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-    }, 3000);
+    }, 2600);
 }
 
 function showSection(sectionId) {
@@ -636,6 +647,7 @@ function initMiniGame() {
     // Game objects
     const bucket = {
         x: canvas.width / 2 - 40,
+        targetX: canvas.width / 2 - 40, // 👈 NEW
         y: canvas.height - 60,
         width: 80,
         height: 50,
@@ -1127,12 +1139,13 @@ document.querySelector('.name-title')?.addEventListener('click', function() {
     }
 });
 
-// Disable pinch-to-zoom on mobile for better game experience
-document.addEventListener('touchmove', function(event) {
-    if (event.scale !== 1) {
-        event.preventDefault();
-    }
-}, { passive: false });
+const scratchCanvas = document.getElementById("scratch-canvas");
+
+if (scratchCanvas) {
+    scratchCanvas.addEventListener("touchmove", function (e) {
+        e.preventDefault();
+    }, { passive: false });
+}
 
 // Performance optimization: Pause animations when tab is not visible
 document.addEventListener('visibilitychange', () => {
