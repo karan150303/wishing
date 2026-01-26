@@ -31,7 +31,7 @@ body {
 
 .section {
     display: none;
-    min-height: 100vh;
+    min-height: 100svh;
     width: 100%;
     justify-content: center;
     align-items: center;
@@ -133,8 +133,9 @@ body {
     justify-content: center;
     align-items: center;
     animation: fadeIn 0.5s ease;
+    cursor: pointer; /* 👈 ADD THIS - iOS needs visual indicator */
+    -webkit-tap-highlight-color: transparent; /* 👈 ADD THIS - removes iOS tap flash */
 }
-
 .initial-popup.active {
     display: flex;
 }
@@ -144,6 +145,7 @@ body {
     text-align: center;
     animation: popupBounce 1s cubic-bezier(0.68, -0.55, 0.265, 1.55),
                cinematicZoom 6s ease-in-out infinite;
+    pointer-events: auto;
 }
 
 .popup-image {
@@ -2453,4 +2455,175 @@ body {
 .days-card > * + *,
 .memories-card > * + * {
   margin-top: 6px;
+}
+.scroll-wrapper {
+    position: absolute;
+    left: 50%;
+    top: 90px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    z-index: 5;
+}
+
+.scroll-rod {
+    width: 16px;
+    height: 70px;
+    background: linear-gradient(180deg, #b8860b, #ffd700);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255,215,0,0.6);
+}
+
+.scroll-banner {
+    transform-origin: center;
+    transform: scaleX(0);
+    padding: 14px 35px;
+    margin: 0 -4px;
+    background: linear-gradient(135deg, #fff1b8, #ffd700);
+    border-radius: 12px;
+    box-shadow: inset 0 0 10px rgba(255,255,255,0.6),
+                0 15px 40px rgba(255,215,0,0.5);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.scroll-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 4vw, 2.2rem);
+    font-weight: 800;
+    color: #2D1B4E;
+    opacity: 0;
+}
+/* ===== BIRD + SCROLL FIX ===== */
+
+.bird-scene {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.bird {
+    position: absolute;
+    top: 20px;
+    font-size: 3rem;
+    opacity: 1; /* IMPORTANT */
+    z-index: 10;
+}
+
+.bird-left {
+    left: -80px;
+}
+
+.bird-right {
+    right: -80px;
+    transform: scaleX(-1);
+}
+
+.scroll-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.scroll-rod {
+    width: 16px;
+    height: 70px;
+    background: linear-gradient(180deg, #b8860b, #ffd700);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255,215,0,0.6);
+}
+
+.scroll-banner {
+    transform: scaleX(0);
+    transform-origin: center;
+    padding: 14px 36px;
+    background: linear-gradient(135deg, #fff1b8, #ffd700);
+    margin: 0 -6px;
+    border-radius: 12px;
+    box-shadow: 0 15px 40px rgba(255,215,0,0.5);
+}
+
+.scroll-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 4vw, 2.2rem);
+    font-weight: 800;
+    color: #2D1B4E;
+    opacity: 0;
+}
+.loading-subtext {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 35px;
+    letter-spacing: 1px;
+    animation: fadeIn 1.5s ease 0.8s both;
+}
+.progress-step {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.progress-step img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.5;
+    filter: grayscale(1);
+    transition: opacity 0.3s ease, filter 0.3s ease, transform 0.3s ease;
+}
+
+/* Active step */
+.progress-step.active {
+    background: radial-gradient(circle, rgba(255,215,0,0.5), rgba(255,215,0,0.2));
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    transform: scale(1.15);
+}
+
+.progress-step.active img {
+    opacity: 1;
+    filter: none;
+}
+
+/* Completed steps */
+.progress-step.completed img {
+    opacity: 0.9;
+    filter: none;
+}
+.popup-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.85);
+    transition: opacity 0.4s ease;
+}
+.popup-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255, 248, 220, 0.9); /* soft ivory */
+    margin-top: 14px;
+}
+@supports (-webkit-touch-callout: none) {
+    .initial-popup {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(0, 0, 0, 0.97);
+    }
+}
+.initial-popup {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
 }

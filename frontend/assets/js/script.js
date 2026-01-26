@@ -1,3 +1,9 @@
+function triggerHaptic(pattern) {
+    if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+    }
+}
+
 /* ================= ANALYTICS ENGINE ================= */
 let controlsBound = false;
 
@@ -116,7 +122,7 @@ const galleryImages = [
         caption: 'Sorry no more pics'
     },
     {
-        url: 'assets/images/mankirat.jpg',
+        url: 'assets/images/moana_moana.png',
         caption: 'Sorry no more pics'
     }
 ];
@@ -275,33 +281,57 @@ function animateGiftBox() {
 }
 
 function animateDateReveal() {
-    const dateText = document.querySelector('.date-text');
+    const birdLeft = document.querySelector('.bird-left');
+    const birdRight = document.querySelector('.bird-right');
+    const scroll = document.querySelector('.scroll-banner');
+    const text = document.querySelector('.scroll-text');
     const specialText = document.querySelector('.special-text');
-    const sparkles = document.querySelectorAll('.sparkle');
-    
-    gsap.fromTo(dateText,
-        { scale: 0, rotation: 360 },
-        { scale: 1, rotation: 0, duration: 1.2, ease: "back.out(1.7)" }
-    );
-    
-    gsap.fromTo(specialText,
+
+    gsap.set([birdLeft, birdRight], { y: 0 });
+
+    const tl = gsap.timeline();
+
+    // Birds fly in
+    tl.fromTo(birdLeft,
+        { x: -200 },
+        { x: 120, duration: 1.2, ease: "power3.out" }
+    )
+    .fromTo(birdRight,
+        { x: 200 },
+        { x: -120, duration: 1.2, ease: "power3.out" },
+        "<"
+    )
+
+    // Scroll opens
+    .to(scroll, {
+        scaleX: 1,
+        duration: 0.9,
+        ease: "power4.out"
+    })
+
+    // Date reveal
+    .to(text, {
+        opacity: 1,
+        duration: 0.5
+    })
+
+    // Birds fly away
+    .to([birdLeft, birdRight], {
+        y: -120,
+        opacity: 0,
+        duration: 1,
+        delay: 0.5,
+        ease: "power2.in"
+    })
+
+    // Subtitle
+    .fromTo(specialText,
         { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, delay: 0.6 }
+        { opacity: 1, y: 0, duration: 0.8 },
+        "-=0.4"
     );
-    
-    sparkles.forEach((sparkle, index) => {
-        gsap.fromTo(sparkle,
-            { scale: 0, rotation: 0 },
-            { 
-                scale: 1, 
-                rotation: 360, 
-                duration: 0.8, 
-                delay: 0.3 + index * 0.1,
-                ease: "back.out(1.7)"
-            }
-        );
-    });
 }
+
 
 function animateBirthdayTitle() {
     const birthdayTitle = document.querySelector('.birthday-title');
@@ -411,22 +441,51 @@ function animatePrincessMirror() {
 }
 
 
-// Initial popup auto-dismiss
 window.addEventListener('load', () => {
+
+    // HARD FAILSAFE — popup always exits
     setTimeout(() => {
-        document.getElementById('initial-popup').classList.remove('active');
-        document.getElementById('loading-screen').classList.add('active');
-        updateProgress(0);
-        startBalloons();
-        animateGiftBox();
-    }, 3000);
-    
+        const popup = document.getElementById('initial-popup');
+
+        if (popup && popup.classList.contains('active')) {
+            popup.classList.remove('active');
+
+            const loading = document.getElementById('loading-screen');
+            loading.classList.add('active');
+
+            updateProgress(0);
+            startBalloons();
+            animateGiftBox();
+        }
+    }, 2500); // 👈 shorter now, since no intro animation
+
     // Preload gallery images
     galleryImages.forEach(img => {
         const image = new Image();
         image.src = img.url;
     });
+    // Add click handler to close initial popup
+const initialPopup = document.getElementById('initial-popup');
+
+function closePopup() {
+    if (!initialPopup.classList.contains('active')) return;
+
+    initialPopup.classList.remove('active');
+
+    const loading = document.getElementById('loading-screen');
+    loading.classList.add('active');
+
+    updateProgress(0);
+    startBalloons();
+    animateGiftBox();
+}
+
+initialPopup.addEventListener('click', closePopup);
+initialPopup.addEventListener('touchstart', closePopup, { passive: true });
+
+
 });
+
 
 // Start balloon animations
 function startBalloons() {
@@ -464,45 +523,51 @@ document.getElementById('open-gift-btn').addEventListener('click', () => {
     
     setTimeout(() => {
         showSection('main-screen');
-        showToast('💝 Make a wish and blow the candles! 💝');
-    }, 3000);
+        showToast('Take your time here. Blow all the candles! 🕯️');
+    }, 5000);
 });
 
 // Candle blowing
 const candles = document.querySelectorAll('.candle');
 candles.forEach(candle => {
     candle.addEventListener('click', function() {
-        if (!this.classList.contains('blown')) {
-            this.classList.add('blown');
-            candlesBlown++;
-            
-            // GSAP animation for blown candle
-            gsap.to(this, {
-                scale: 0.92,
-                filter: 'grayscale(0.9) brightness(0.6)',
-                duration: 0.4
-            });
-            
-            // Play blow sound effect
-            // playBlowSound();
-            
-            // Add smoke effect
-            createSmoke(this);
-            
-            if (candlesBlown === candles.length) {
-                setTimeout(() => {
-                    createConfetti();
-                    const nextBtn = document.getElementById('next-to-gallery');
-                    nextBtn.style.display = 'inline-block';
-                    gsap.fromTo(nextBtn,
-                        { opacity: 0, scale: 0.5, y: 20 },
-                        { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }
-                    );
-                    showToast('🎉 All candles blown! You can continue when ready 🎉');
-                }, 500);
-            }
+    if (!this.classList.contains('blown')) {
+        this.classList.add('blown');
+        candlesBlown++;
+
+        // 🔔 HAPTIC: candle pop (short & crisp)
+        triggerHaptic(30);
+
+        // GSAP animation for blown candle
+        gsap.to(this, {
+            scale: 0.92,
+            filter: 'grayscale(0.9) brightness(0.6)',
+            duration: 0.4
+        });
+
+        createSmoke(this);
+
+        if (candlesBlown === candles.length) {
+            setTimeout(() => {
+
+                // 🎉 HAPTIC: celebration (pattern)
+                triggerHaptic([60, 40, 60]);
+
+                createConfetti();
+                const nextBtn = document.getElementById('next-to-gallery');
+                nextBtn.style.display = 'inline-block';
+
+                gsap.fromTo(nextBtn,
+                    { opacity: 0, scale: 0.5, y: 20 },
+                    { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }
+                );
+
+                showToast('🎉 All candles blown! You can continue when ready 🎉');
+            }, 500);
         }
-    });
+    }
+});
+
 });
 
 // Create smoke effect when candle is blown
@@ -616,7 +681,7 @@ function typeWriter(text, index) {
                 { opacity: 0, y: 20 },
                 { opacity: 1, y: 0, duration: 0.6 }
             );
-            showToast('🎮 Ready for a fun game? 🎮');
+            showToast('We can keep this light for a moment.');
         }, 500);
     }
 }
@@ -1160,5 +1225,7 @@ document.addEventListener('visibilitychange', () => {
         });
     }
 });
+
+
 
 console.log('✨ Birthday card loaded successfully! ✨');
