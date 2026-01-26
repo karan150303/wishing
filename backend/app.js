@@ -62,7 +62,7 @@ async function getIpLocation(ip) {
       longitude: data.longitude || "N/A",
       isp: data.org || "Unknown ISP"
     };
-  } catch (err) {
+  } catch {
     return {
       city: "Unknown",
       region: "Unknown",
@@ -74,12 +74,24 @@ async function getIpLocation(ip) {
   }
 }
 
-// ================= VISITOR LOGGING =================
+// ================= VISITOR LOGGING (CLEAN) =================
+const loggedIPs = new Map(); // cache to prevent spam
+
 app.use(async (req, res, next) => {
-  // Skip health checks to avoid spam
-  if (req.path === "/health") return next();
+  // ✅ only log real visits
+  const allowedPaths = ["/", "/api/analytics/track"];
+  if (!allowedPaths.includes(req.path)) return next();
 
   const ip = getClientIp(req);
+
+  // ⛔ prevent repeated logs from same IP (5 min)
+  const now = Date.now();
+  const lastSeen = loggedIPs.get(ip);
+  if (lastSeen && now - lastSeen < 5 * 60 * 1000) {
+    return next();
+  }
+  loggedIPs.set(ip, now);
+
   const userAgent = req.headers["user-agent"] || "unknown";
   const referrer = req.headers["referer"] || "direct";
 
@@ -91,7 +103,7 @@ app.use(async (req, res, next) => {
   const location = await getIpLocation(ip);
 
   console.log(`
-[VISITOR LOG]
+[VISITOR]
 Name      : ${visitorName}
 IP        : ${ip}
 City      : ${location.city}
@@ -101,7 +113,7 @@ Latitude  : ${location.latitude}
 Longitude : ${location.longitude}
 ISP       : ${location.isp}
 Time      : ${time}
-Request   : ${req.method} ${req.originalUrl}
+Path      : ${req.method} ${req.originalUrl}
 Referrer  : ${referrer}
 ---------------------------------------
 `);
