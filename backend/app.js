@@ -10,6 +10,9 @@ const errorMiddleware = require("./middlewares/errorMiddleware");
 
 const app = express();
 
+// 🔴 REQUIRED FOR RENDER / PROXIES
+app.set("trust proxy", true);
+
 // ================= DB =================
 connectDB();
 
@@ -41,79 +44,79 @@ function getVisitorLabel(userAgent = "") {
   return `${platform} • ${device} • ${os}`;
 }
 
+// Use Express trusted IP
 function getClientIp(req) {
-  return (
-    req.headers["x-forwarded-for"]?.split(",")[0] ||
-    req.socket.remoteAddress ||
-    "unknown"
-  );
+  return req.ip || "unknown";
 }
 
+// City-level GEO (best free accuracy)
 async function getIpLocation(ip) {
   try {
-    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    // Skip private / local IPs
+    if (
+      ip === "::1" ||
+      ip.startsWith("127.") ||
+      ip.startsWith("10.") ||
+      ip.startsWith("192.168")
+    ) {
+      return null;
+    }
+
+    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,lat,lon,isp,org`);
     const data = await res.json();
 
+    if (data.status !== "success") return null;
+
     return {
-      city: data.city || "Unknown",
-      region: data.region || "Unknown",
-      country: data.country_name || "Unknown",
-      latitude: data.latitude || "N/A",
-      longitude: data.longitude || "N/A",
-      isp: data.org || "Unknown ISP"
+      city: data.city,
+      region: data.regionName,
+      country: data.country,
+      latitude: data.lat,
+      longitude: data.lon,
+      isp: data.isp || data.org
     };
   } catch {
-    return {
-      city: "Unknown",
-      region: "Unknown",
-      country: "Unknown",
-      latitude: "N/A",
-      longitude: "N/A",
-      isp: "Unknown ISP"
-    };
+    return null;
   }
 }
 
-// ================= VISITOR LOGGING (CLEAN) =================
-const loggedIPs = new Map(); // cache to prevent spam
+// ================= VISITOR LOGGING (PRODUCTION) =================
+const loggedIPs = new Map();
 
 app.use(async (req, res, next) => {
-  // ✅ only log real visits
-  const allowedPaths = ["/", "/api/analytics/track"];
-  if (!allowedPaths.includes(req.path)) return next();
+  // ✅ Only log REAL page visits
+  if (req.method !== "GET" || req.path !== "/") return next();
 
   const ip = getClientIp(req);
 
-  // ⛔ prevent repeated logs from same IP (5 min)
+  // ⛔ Deduplicate (10 minutes)
   const now = Date.now();
-  const lastSeen = loggedIPs.get(ip);
-  if (lastSeen && now - lastSeen < 5 * 60 * 1000) {
+  if (loggedIPs.has(ip) && now - loggedIPs.get(ip) < 10 * 60 * 1000) {
     return next();
   }
   loggedIPs.set(ip, now);
 
   const userAgent = req.headers["user-agent"] || "unknown";
   const referrer = req.headers["referer"] || "direct";
+  const visitorName = getVisitorLabel(userAgent);
 
   const time = new Date().toLocaleString("en-IN", {
     timeZone: "Asia/Kolkata"
   });
 
-  const visitorName = getVisitorLabel(userAgent);
   const location = await getIpLocation(ip);
 
   console.log(`
-[VISITOR]
+[REAL VISITOR]
 Name      : ${visitorName}
 IP        : ${ip}
-City      : ${location.city}
-Region    : ${location.region}
-Country   : ${location.country}
-Latitude  : ${location.latitude}
-Longitude : ${location.longitude}
-ISP       : ${location.isp}
+City      : ${location?.city || "Unavailable"}
+Region    : ${location?.region || "Unavailable"}
+Country   : ${location?.country || "Unavailable"}
+Latitude  : ${location?.latitude ?? "N/A"}
+Longitude : ${location?.longitude ?? "N/A"}
+ISP       : ${location?.isp || "Unavailable"}
 Time      : ${time}
-Path      : ${req.method} ${req.originalUrl}
 Referrer  : ${referrer}
 ---------------------------------------
 `);
