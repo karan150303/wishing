@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Happy Birthday Mankirat! 🎉</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +40,7 @@
             <img src="assets/images/icons/new-email.png" alt="Message">
         </div>
         <div class="progress-step" data-step="7">
-            <img src="assets/images/icons/joystick.png" alt="Game">
+            <img src="assets/images/icons/galaxy.png" alt="Game">
         </div>
         <div class="progress-step" data-step="8">
             <img src="assets/images/icons/open-box.png" alt="Gift">
@@ -52,6 +55,9 @@
     <!-- Initial Birthday Popup -->
     <div id="initial-popup" class="initial-popup active">
         <div class="popup-content">
+            <p class="continue-hint">
+            Continuing <span class="dots"></span>
+            </p>
             <div class="popup-sparkles">
                 <span class="popup-sparkle">✨</span>
                 <span class="popup-sparkle">✨</span>
@@ -60,7 +66,9 @@
             </div>
             <img src="assets/images/nn.jpg" 
             alt="Mankirat"
-            class="popup-image">
+            class="popup-image"
+            loading="eager"
+            decoding="async">
 
 
             <h1 class="popup-title">Happy Birthday!</h1>
@@ -244,27 +252,21 @@
                 <p id="typewriter-text" class="typewriter-text"></p>
                 <span class="cursor">|</span>
             </div>
-            <button id="next-to-minigame" class="next-section-btn" style="display: none;">Continue to Game →</button>
+            <button id="next-to-minigame" class="next-section-btn" style="display: none;">Continue →</button>
         </div>
     </div>
 
-    <!-- Mini Game Screen -->
+    <!-- Star Map Screen -->
     <div id="minigame-screen" class="section">
-        <div class="minigame-container">
-            <h2 class="minigame-title">Just for fun.</h2>
-            <div class="game-info">
-                <div class="score-display">Score: <span id="game-score">0</span></div>
-                <div class="timer-display">Time: <span id="game-timer">30</span>s</div>
+        <div class="starmap-container">
+            <h2 class="starmap-title">Relax for a moment.</h2>
+            <p class="starmap-subtitle">The universe on your birthday</p>
+            
+            <div class="starmap-canvas-wrapper">
+                <canvas id="starmap-canvas"></canvas>
             </div>
-            <div class="game-canvas-wrapper">
-                <canvas id="game-canvas"></canvas>
-                <div id="game-over" class="game-over-screen" style="display: none;">
-                    <h3>🎉 Great Job! 🎉</h3>
-                    <p class="final-score">Score: <span id="final-score">0</span></p>
-                    <button id="continue-after-game" class="game-continue-btn">Continue →</button>
-                </div>
-            </div>
-            <button id="skip-game" class="skip-game-btn">Skip Game →</button>
+            
+            <button id="continue-after-starmap" class="continue-starmap-btn">Continue →</button>
         </div>
     </div>
 
@@ -382,7 +384,7 @@
         </div>
     </div>
 <footer class="dev-strip">
-  Developed by <span>Karan</span>
+  Designed by <span>Karan</span>
 </footer>
 
     <!-- Confetti Container -->

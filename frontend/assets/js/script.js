@@ -129,13 +129,14 @@ const galleryImages = [
 
 const personalMessage = `Hey Mankirat,
 
-Just wanted to wish you a very happy birthday.
+I wanted to wish you a very happy birthday.
 
-I've thought about the past, and I realise I didn't handle things maturely back then. I'm sorry for that. I never meant to make things uncomfortable for you.
+I’ve thought about the past, and I realise there were moments I didn’t handle as well as I should have. I’m sorry for that. It was never my intention to make things uncomfortable and awkward.
 
-No expectations at all just wishing you well and hoping this year brings you peace, happiness, and good things ahead.
+I’m wishing you well and hoping the year ahead brings you peace, happiness, and good things.
 
-Take care.`;
+Take care ; )`;
+
 
 // Update progress indicator
 function updateProgress(sectionIndex) {
@@ -253,7 +254,7 @@ function triggerSectionAnimations(sectionId) {
             // Typewriter handles its own animation
             break;
         case 'minigame-screen':
-            initMiniGame();
+            initStarMap();
             break;
     }
 }
@@ -442,47 +443,56 @@ function animatePrincessMirror() {
 
 
 window.addEventListener('load', () => {
-
-    // HARD FAILSAFE — popup always exits
-    setTimeout(() => {
-        const popup = document.getElementById('initial-popup');
-
-        if (popup && popup.classList.contains('active')) {
-            popup.classList.remove('active');
-
-            const loading = document.getElementById('loading-screen');
-            loading.classList.add('active');
-
-            updateProgress(0);
-            startBalloons();
-            animateGiftBox();
-        }
-    }, 2500); // 👈 shorter now, since no intro animation
+    
+    const initialPopup = document.getElementById('initial-popup');
+    let popupClosed = false;
+    
+    function closePopup() {
+        if (popupClosed) return;
+        popupClosed = true;
+        
+        initialPopup.classList.remove('active');
+        
+        const loading = document.getElementById('loading-screen');
+        loading.classList.add('active');
+        
+        updateProgress(0);
+        startBalloons();
+        animateGiftBox();
+    }
+    
+    // HARD FAILSAFE — popup always exits after 2 seconds
+    const failsafeTimer = setTimeout(() => {
+        closePopup();
+    }, 3000);
+    
+    // Multiple ways to close for better mobile support
+    initialPopup.addEventListener('click', () => {
+        clearTimeout(failsafeTimer);
+        closePopup();
+    });
+    
+    initialPopup.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        clearTimeout(failsafeTimer);
+        closePopup();
+    }, { passive: false });
+    
+    // Also close on any tap/click on the popup content
+    const popupContent = initialPopup.querySelector('.popup-content');
+    if (popupContent) {
+        popupContent.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            clearTimeout(failsafeTimer);
+            closePopup();
+        }, { passive: true });
+    }
 
     // Preload gallery images
     galleryImages.forEach(img => {
         const image = new Image();
         image.src = img.url;
     });
-    // Add click handler to close initial popup
-const initialPopup = document.getElementById('initial-popup');
-
-function closePopup() {
-    if (!initialPopup.classList.contains('active')) return;
-
-    initialPopup.classList.remove('active');
-
-    const loading = document.getElementById('loading-screen');
-    loading.classList.add('active');
-
-    updateProgress(0);
-    startBalloons();
-    animateGiftBox();
-}
-
-initialPopup.addEventListener('click', closePopup);
-initialPopup.addEventListener('touchstart', closePopup, { passive: true });
-
 
 });
 
@@ -645,7 +655,7 @@ document.getElementById('next-to-princess').addEventListener('click', () => {
     stopBalloons();
     
     showSection('princess-loading');
-    showToast('👑 Loading something special... 👑');
+    showToast('Loading something special');
     
     setTimeout(() => {
         showSection('princess-screen');
@@ -689,236 +699,241 @@ function typeWriter(text, index) {
 // Navigate to minigame
 document.getElementById('next-to-minigame').addEventListener('click', () => {
     showSection('minigame-screen');
-    showToast('🎁 Catch the gifts before time runs out! 🎁');
+    showToast('✨ Just a quiet moment ✨');
 });
 
-// ============ MINI GAME: CATCH THE GIFT ============
-let gameScore = 0;
-let gameTime = 30;
-let gameRunning = false;
-let gameInterval;
-let spawnInterval;
-let fallingItems = [];
 
-function initMiniGame() {
-    const canvas = document.getElementById('game-canvas');
+// ============ INTERACTIVE STAR MAP ============
+let stars = [];
+let meteors = [];
+let galaxies = [];
+let starMapRunning = false;
+
+function initStarMap() {
+    const canvas = document.getElementById('starmap-canvas');
     const ctx = canvas.getContext('2d');
     
-    // Set canvas size
-    const containerWidth = Math.min(600, window.innerWidth * 0.95);
-    canvas.width = containerWidth;
-    canvas.height = 400;
+    // Set canvas to fullscreen
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     
-    // Game objects
-    const bucket = {
-        x: canvas.width / 2 - 40,
-        targetX: canvas.width / 2 - 40, // 👈 NEW
-        y: canvas.height - 60,
-        width: 80,
-        height: 50,
-        speed: 8
+    // Reset state
+    stars = [];
+    meteors = [];
+    galaxies = [];
+    starMapRunning = true;
+    
+    // Create way more stars (800 instead of 300)
+    for (let i = 0; i < 800; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 2 + 0.3,
+            opacity: Math.random(),
+            twinkleSpeed: Math.random() * 0.02 + 0.005,
+            brightness: Math.random()
+        });
+    }
+    
+    // Create more galaxies (8 instead of 3)
+    for (let i = 0; i < 8; i++) {
+        galaxies.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 150 + 80,
+            hue: Math.random() * 80 + 180, // Blues and purples
+            opacity: Math.random() * 0.15 + 0.08,
+            rotation: Math.random() * Math.PI * 2,
+            rotationSpeed: (Math.random() - 0.5) * 0.0005
+        });
+    }
+    
+    // Spawn meteors periodically
+    const meteorInterval = setInterval(() => {
+        if (!starMapRunning) {
+            clearInterval(meteorInterval);
+            return;
+        }
+        
+        if (Math.random() > 0.6) {
+            meteors.push({
+                x: Math.random() * canvas.width,
+                y: -20,
+                vx: (Math.random() - 0.5) * 3,
+                vy: Math.random() * 4 + 4,
+                length: Math.random() * 80 + 50,
+                opacity: 1,
+                brightness: Math.random() * 0.5 + 0.5
+            });
+        }
+    }, 600);
+    
+    // Handle window resize
+    const handleResize = () => {
+        if (!starMapRunning) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Redistribute stars and galaxies
+        stars.forEach(star => {
+            if (star.x > canvas.width) star.x = Math.random() * canvas.width;
+            if (star.y > canvas.height) star.y = Math.random() * canvas.height;
+        });
+        
+        galaxies.forEach(galaxy => {
+            if (galaxy.x > canvas.width) galaxy.x = Math.random() * canvas.width;
+            if (galaxy.y > canvas.height) galaxy.y = Math.random() * canvas.height;
+        });
     };
     
-    const keys = {};
+    window.addEventListener('resize', handleResize);
     
-    // Reset game state
-    gameScore = 0;
-    gameTime = 30;
-    gameRunning = true;
-    fallingItems = [];
-    
-    document.getElementById('game-score').textContent = gameScore;
-    document.getElementById('game-timer').textContent = gameTime;
-    document.getElementById('game-over').style.display = 'none';
-    
-    // Spawn falling items
-    spawnInterval = setInterval(() => {
-        if (!gameRunning) return;
+    // Animation loop
+    function animate() {
+        if (!starMapRunning) return;
         
-        const rand = Math.random();
-
-        let itemType = "gift";
-        let emoji = "🎁";
-
-        if (rand < 0.2) {
-            itemType = "bomb";
-            emoji = "💣";
-        } else if (rand < 0.45) {
-            itemType = "balloon";
-            emoji = "🎈";
-        }
-
-        const item = {
-            x: Math.random() * (canvas.width - 30),
-            y: -30,
-            width: 30,
-            height: 30,
-            speed: itemType === "bomb" ? 4 : 2 + Math.random() * 2,
-            emoji,
-            type: itemType
-        };
-
-        fallingItems.push(item);
-    }, 800);
-    
-    // Game timer
-    gameInterval = setInterval(() => {
-        if (!gameRunning) return;
+        // Clear canvas with fade effect for trails
+        ctx.fillStyle = 'rgba(2, 3, 8, 0.25)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        gameTime--;
-        document.getElementById('game-timer').textContent = gameTime;
-        
-        if (gameTime <= 0) {
-            gameOver();
-        }
-    }, 1000);
-    
-    // Input handling
-    if (!controlsBound) {
-        window.addEventListener('keydown', e => keys[e.key] = true);
-        window.addEventListener('keyup', e => keys[e.key] = false);
-        controlsBound = true;
-    }
-
-    
-    // Touch controls for mobile
-    let touchStartX = 0;
-    canvas.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-    });
-    
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        const touchX = e.touches[0].clientX;
-        const diff = touchX - touchStartX;
-        bucket.x += diff * 0.5;
-        touchStartX = touchX;
-        
-        // Keep bucket in bounds
-        bucket.x = Math.max(0, Math.min(canvas.width - bucket.width, bucket.x));
-    });
-    
-    // Game loop
-    function gameLoop() {
-        if (!gameRunning) return;
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Update bucket position
-        if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
-            bucket.x -= bucket.speed;
-        }
-        if (keys['ArrowRight'] || keys['d'] || keys['D']) {
-            bucket.x += bucket.speed;
-        }
-        
-        // Keep bucket in bounds
-        bucket.x = Math.max(0, Math.min(canvas.width - bucket.width, bucket.x));
-        
-        // Draw bucket
-        ctx.font = '50px Arial';
-        ctx.fillText('🧺', bucket.x, bucket.y + bucket.height);
-        
-        // Update and draw falling items
-        for (let i = fallingItems.length - 1; i >= 0; i--) {
-            const item = fallingItems[i];
-            item.y += item.speed;
+        // Draw and animate galaxies
+        galaxies.forEach(galaxy => {
+            galaxy.rotation += galaxy.rotationSpeed;
             
-            // Draw item
-            ctx.font = '30px Arial';
-            ctx.fillText(item.emoji, item.x, item.y + item.height);
+            // Create spiral galaxy effect
+            ctx.save();
+            ctx.translate(galaxy.x, galaxy.y);
+            ctx.rotate(galaxy.rotation);
             
-            // Check collision with bucket
-            if (item.y + item.height > bucket.y &&
-                item.y < bucket.y + bucket.height &&
-                item.x + item.width > bucket.x &&
-                item.x < bucket.x + bucket.width) {
+            // Multiple layers for depth
+            for (let layer = 0; layer < 3; layer++) {
+                const layerRadius = galaxy.radius * (1 - layer * 0.2);
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, layerRadius);
                 
-                if (item.type === "bomb") {
-                    gameOver("💥 Boom! You caught a bomb");
-                    return;
-                }
-
-                if (item.type === "gift") {
-                    gameScore += 10;
-                    document.getElementById('game-score').textContent = gameScore;
-                    playCollectSound();
-                }
+                const hueShift = layer * 10;
+                gradient.addColorStop(0, `hsla(${galaxy.hue + hueShift}, 80%, 60%, ${galaxy.opacity * 0.8})`);
+                gradient.addColorStop(0.3, `hsla(${galaxy.hue + hueShift}, 70%, 50%, ${galaxy.opacity * 0.5})`);
+                gradient.addColorStop(0.6, `hsla(${galaxy.hue + hueShift}, 60%, 40%, ${galaxy.opacity * 0.3})`);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
                 
-                fallingItems.splice(i, 1);
-                continue;
+                ctx.fillStyle = gradient;
+                ctx.fillRect(-layerRadius, -layerRadius, layerRadius * 2, layerRadius * 2);
             }
             
-            // Remove if out of bounds
-            if (item.y > canvas.height) {
-                fallingItems.splice(i, 1);
+            ctx.restore();
+        });
+        
+        // Draw and update stars with varying brightness
+        stars.forEach(star => {
+            // Twinkling effect
+            star.opacity += star.twinkleSpeed;
+            if (star.opacity > 1 || star.opacity < 0.2) {
+                star.twinkleSpeed *= -1;
+            }
+            
+            const finalOpacity = star.opacity * star.brightness;
+            
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${finalOpacity})`;
+            ctx.fill();
+            
+            // Add glow to brighter stars
+            if (star.radius > 1.2 && finalOpacity > 0.6) {
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = `rgba(255, 255, 255, ${finalOpacity * 0.6})`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Extra bright stars get a cross-flare effect
+            if (star.radius > 1.5 && finalOpacity > 0.8) {
+                ctx.strokeStyle = `rgba(255, 255, 255, ${finalOpacity * 0.4})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(star.x - 4, star.y);
+                ctx.lineTo(star.x + 4, star.y);
+                ctx.moveTo(star.x, star.y - 4);
+                ctx.lineTo(star.x, star.y + 4);
+                ctx.stroke();
+            }
+        });
+        
+        // Draw and update meteors
+        for (let i = meteors.length - 1; i >= 0; i--) {
+            const meteor = meteors[i];
+            
+            meteor.x += meteor.vx;
+            meteor.y += meteor.vy;
+            
+            // Draw meteor trail with gradient
+            const gradient = ctx.createLinearGradient(
+                meteor.x, meteor.y,
+                meteor.x - meteor.vx * 15, meteor.y - meteor.vy * 15
+            );
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${meteor.opacity * meteor.brightness})`);
+            gradient.addColorStop(0.3, `rgba(255, 220, 150, ${meteor.opacity * meteor.brightness * 0.7})`);
+            gradient.addColorStop(0.6, `rgba(255, 200, 100, ${meteor.opacity * meteor.brightness * 0.4})`);
+            gradient.addColorStop(1, 'rgba(255, 180, 80, 0)');
+            
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(meteor.x, meteor.y);
+            ctx.lineTo(
+                meteor.x - meteor.vx * meteor.length / meteor.vy,
+                meteor.y - meteor.length
+            );
+            ctx.stroke();
+            
+            // Draw meteor head with glow
+            ctx.beginPath();
+            ctx.arc(meteor.x, meteor.y, 4, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${meteor.opacity})`;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = `rgba(255, 220, 150, ${meteor.brightness})`;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Add sparkles around meteor head
+            for (let j = 0; j < 3; j++) {
+                const sparkleX = meteor.x + (Math.random() - 0.5) * 10;
+                const sparkleY = meteor.y + (Math.random() - 0.5) * 10;
+                ctx.beginPath();
+                ctx.arc(sparkleX, sparkleY, 1, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 220, 150, ${meteor.opacity * 0.6})`;
+                ctx.fill();
+            }
+            
+            // Remove if off screen
+            if (meteor.y > canvas.height + 100 || meteor.x < -100 || meteor.x > canvas.width + 100) {
+                meteors.splice(i, 1);
             }
         }
         
-        requestAnimationFrame(gameLoop);
+        requestAnimationFrame(animate);
     }
     
-    gameLoop();
+    animate();
+    
+    // Show continue button after some time
+    setTimeout(() => {
+        document.getElementById('continue-after-starmap').style.display = 'block';
+        gsap.fromTo('#continue-after-starmap',
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.8, ease: 'power2.out' }
+        );
+    }, 8000);
 }
 
-function gameOver(reason = "⏱ Time’s up!") {
-    gameRunning = false;
-    clearInterval(gameInterval);
-    clearInterval(spawnInterval);
-
-    document.getElementById('final-score').textContent = gameScore;
-
-    const gameOverScreen = document.getElementById('game-over');
-    gameOverScreen.querySelector("h3").textContent = reason;
-    gameOverScreen.style.display = "flex";
-
-    gsap.fromTo(gameOverScreen,
-        { scale: 0, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
-    );
-
-    createConfetti();
-}
-
-function playCollectSound() {
-    try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        
-        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (e) {
-        console.log('Audio not supported');
-    }
-}
-
-// Continue after game
-document.getElementById('continue-after-game').addEventListener('click', () => {
+// Continue after star map
+document.getElementById('continue-after-starmap').addEventListener('click', () => {
+    starMapRunning = false;
     showSection('gift-screen');
     showToast('✨ Scratch to reveal your surprise! ✨');
     initScratchCard();
 });
 
-// Skip game button
-document.getElementById('skip-game').addEventListener('click', () => {
-    if (gameRunning) {
-        gameOver("⏭ Skipped the game");
-    }
-    showSection('gift-screen');
-    showToast('✨ Scratch to reveal your surprise! ✨');
-    initScratchCard();
-});
 
 
 // Scratch card
